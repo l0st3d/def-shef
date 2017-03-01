@@ -6,6 +6,7 @@
             [clojure.java.io :as io]
             [clojure.test :as t :refer [is testing are]]
             [clojure.math.numeric-tower :as math]
+            [clojure.math.combinatorics :as comb]
             [clojure.edn :as edn]))
 
 (defn- ->num [x]
@@ -22,7 +23,7 @@
     (is (thrown? AssertionError (parse-data [["1" "2" "test"] ["1" "2" "3" "test2"]])))))
 
 (defn load-data [file]
-  (parse-data (csv/read-csv (io/reader file))))
+  (shuffle (parse-data (csv/read-csv (io/reader file)))))
 
 (t/with-test
   (defn distance-between [x y]
@@ -70,3 +71,23 @@
             tag (guess-tag (:coords random-el) 3 (filter #{random-el} data))]
         (is (= tag (:tag random-el)))))))
 
+(defn train-classifier [k data]
+  (fn classifier [coords]
+    (guess-tag coords k data)))
+
+(defn choose-samples [k data]
+  (let [samples (partition-all k data)]
+    (->> samples
+         (map-indexed (fn [i sample]
+                        (let [data (reduce concat (concat (take i samples) (drop (inc i) samples)))
+                              classifier (train-classifier k data)]
+                          {:sample sample :data data :classifier classifier}))))))
+
+(defn test-classifier [k data]
+  (->> (choose-samples k data)
+       (map (fn [{{:keys [coords tag]} :sample :keys [data classifier]}]
+              (= tag (classifier coords))))
+       (group-by identity)))
+
+(defonce iris-data (load-data "resources/iris.data"))
+(defonce phishing-data (load-data "resources/phishing.data"))
