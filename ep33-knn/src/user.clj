@@ -13,12 +13,13 @@
 
 (t/with-test
   (defn- parse-data [data]
-    {:post [(->> % (map :coords) (every? (comp (partial = (count (:coords (first %)))) count)))]}
+    {:post [(->> % (map (comp count :coords)) (reduce (fn [a b] (when (= a b) a))))]}
     (->> data
          (map #(array-map :tag (last %) :coords (mapv ->num (butlast %))))
          (remove (comp empty? :tag))))
 
-  (is (thrown? AssertionError (parse-data [["1" "2" "test"] ["1" "2" "3" "test2"]]))))
+  (testing "parse-data"
+    (is (thrown? AssertionError (parse-data [["1" "2" "test"] ["1" "2" "3" "test2"]])))))
 
 (defn load-data [file]
   (parse-data (csv/read-csv (io/reader file))))
