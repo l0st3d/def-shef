@@ -1,0 +1,3 @@
+* def-shef
+
+A scratch pad for some exercises.
