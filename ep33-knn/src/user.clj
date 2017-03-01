@@ -30,9 +30,10 @@
          (reduce + 0)
          math/sqrt))
 
-  (are [x y d] (= d (distance-between x y))
-    [1 2 3] [1 2 3] 0
-    [0 0] [3 4] 5))
+  (testing "distance-between"
+    (are [x y d] (= d (distance-between x y))
+      [1 2 3] [1 2 3] 0
+      [0 0] [3 4] 5)))
 
 (t/with-test
   (defn guess-tag [coords k data]
@@ -45,26 +46,27 @@
          last
          key))
 
-  (testing "some random data"
-    (are [t c k d] (= t (guess-tag c k d))
-      "test" [1] 3 [{:coords [0] :tag "test"}
-                    {:coords [2] :tag "test"}
-                    {:coords [5] :tag "fail"}
-                    {:coords [10] :tag "fail"}
-                    {:coords [20] :tag "fail"}]
-      "test" [1] 5 [{:coords [0] :tag "fail"}
-                    {:coords [2] :tag "fail"}
-                    {:coords [5] :tag "test"}
-                    {:coords [10] :tag "test"}
-                    {:coords [20] :tag "test"}]))
-  (testing "leave one out"
-    (let [data (load-data "resources/iris.data")]
-      (doseq [random-el data]
-        (let [tag (guess-tag (:coords random-el) 3 (filter #{random-el} data))]
-          (is (= tag (:tag random-el)))))))
-  (testing "leave one out 2"
-    (let [data (load-data "resources/phishing.data")
-          random-el (rand-nth data)
-          tag (guess-tag (:coords random-el) 3 (filter #{random-el} data))]
-      (is (= tag (:tag random-el))))))
+  (testing "guess-tag"
+    (testing "some random data"
+      (are [t c k d] (= t (guess-tag c k d))
+        "test" [1] 3 [{:coords [0] :tag "test"}
+                      {:coords [2] :tag "test"}
+                      {:coords [5] :tag "fail"}
+                      {:coords [10] :tag "fail"}
+                      {:coords [20] :tag "fail"}]
+        "test" [1] 5 [{:coords [0] :tag "fail"}
+                      {:coords [2] :tag "fail"}
+                      {:coords [5] :tag "test"}
+                      {:coords [10] :tag "test"}
+                      {:coords [20] :tag "test"}]))
+    (testing "leave one out"
+      (let [data (load-data "resources/iris.data")]
+        (doseq [random-el data]
+          (let [tag (guess-tag (:coords random-el) 3 (filter #{random-el} data))]
+            (is (= tag (:tag random-el)))))))
+    (testing "leave one out 2"
+      (let [data (load-data "resources/phishing.data")
+            random-el (rand-nth data)
+            tag (guess-tag (:coords random-el) 3 (filter #{random-el} data))]
+        (is (= tag (:tag random-el)))))))
 
