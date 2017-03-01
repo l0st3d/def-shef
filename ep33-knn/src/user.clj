@@ -42,8 +42,8 @@
          (sort-by (comp min :distance))
          (take k)
          (group-by :tag)
-         (sort-by (comp count val))
-         last
+         (sort-by (comp - count val))
+         first
          key))
 
   (testing "guess-tag"
