@@ -60,5 +60,10 @@
     (let [data (load-data "resources/iris.data")]
       (doseq [random-el data]
         (let [tag (guess-tag (:coords random-el) 3 (filter #{random-el} data))]
-          (is (= tag (:tag random-el))))))))
+          (is (= tag (:tag random-el)))))))
+  (testing "leave one out 2"
+    (let [data (load-data "resources/phishing.data")
+          random-el (rand-nth data)
+          tag (guess-tag (:coords random-el) 3 (filter #{random-el} data))]
+      (is (= tag (:tag random-el))))))
 
