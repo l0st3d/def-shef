@@ -40,22 +40,24 @@
   (fn classifier [coords]
     (guess-tag coords k data)))
 
+(defn select-a-sample [k data samples]
+  (fn [i sample]
+    (let [data (flatten (concat (take i samples) (drop (inc i) samples)))
+          classifier (train-classifier k data)]
+      {:sample sample :data data :classifier classifier})))
+
 (defn choose-samples [k data]
   (let [samples (partition-all k data)]
-    (->> samples
-         (map-indexed (fn [i sample]
-                        (let [data (reduce concat (concat (take i samples) (drop (inc i) samples)))
-                              classifier (train-classifier k data)]
-                          {:sample sample :data data :classifier classifier}))))))
+    (map-indexed (select-a-sample k data samples) samples)))
+
+(defn score-sample [{:keys [sample data classifier]}]
+  (for [{:keys [coords tag]} sample
+        :when (= tag (classifier coords))]
+    1))
 
 (defn test-classifier [k data]
   (/ (->> (choose-samples k data)
-          (mapcat (fn [{:keys [sample data classifier]}]
-                    (for [{:keys [coords tag]} sample
-                          :let [guess (classifier coords)]]
-                      (if (not= tag guess)
-                        (do (prn sample tag guess) 0)
-                        1))))
+          (mapcat score-sample)
           (reduce +))
      (count data)))
 
